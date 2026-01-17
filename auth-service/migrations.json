@@ -1,0 +1,5 @@
+{
+    "migrations-directory": "migrations",
+    "database-url-var": "DATABASE_URL",
+    "ignore-pattern": ".*\\.ts"
+}

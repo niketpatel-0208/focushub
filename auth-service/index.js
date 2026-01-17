@@ -1,12 +1,21 @@
 require('dotenv').config({ path: '../.env' });
 const fastify = require('fastify')({ logger: true });
-const { Pool } = require('pg');
+const cors = require('@fastify/cors');
+const rateLimit = require('@fastify/rate-limit');
+const Redis = require('ioredis');
+
+// Import shared utilities
+const shared = require('../shared');
+const { database, logger, errorHandler, notFoundHandler } = shared;
+
+// Import routes
+const authRoutes = require('./routes/auth');
 
 const PORT = process.env.AUTH_SERVICE_PORT || 3001;
 const HOST = process.env.AUTH_SERVICE_HOST || '0.0.0.0';
 
-// PostgreSQL connection pool
-const pool = new Pool({
+// Create database pool
+const dbPool = database.createPool({
     host: process.env.AUTH_DB_HOST,
     port: process.env.AUTH_DB_PORT,
     database: process.env.AUTH_DB_NAME,
@@ -14,22 +23,66 @@ const pool = new Pool({
     password: process.env.AUTH_DB_PASSWORD,
 });
 
+// Create Redis client for rate limiting
+const redis = new Redis({
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379,
+    password: process.env.REDIS_PASSWORD || undefined,
+    retryStrategy(times) {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+    },
+});
+
+redis.on('error', (err) => {
+    logger.error('Redis connection error', err);
+});
+
+// Register plugins
+fastify.register(cors, {
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+});
+
+fastify.register(rateLimit, {
+    max: 100,
+    timeWindow: '15 minutes',
+    redis,
+});
+
+// Attach database pool to fastify instance
+fastify.decorate('db', dbPool);
+fastify.decorate('redis', redis);
+
+// Register error handlers
+fastify.setErrorHandler(errorHandler);
+fastify.setNotFoundHandler(notFoundHandler);
+
 // Health check endpoint
 fastify.get('/health', async (request, reply) => {
     let dbStatus = 'disconnected';
+    let redisStatus = 'disconnected';
 
     try {
-        await pool.query('SELECT 1');
+        await dbPool.query('SELECT 1');
         dbStatus = 'connected';
     } catch (err) {
-        fastify.log.error('Database health check failed:', err);
+        logger.error('Database health check failed', err);
+    }
+
+    try {
+        await redis.ping();
+        redisStatus = 'connected';
+    } catch (err) {
+        logger.error('Redis health check failed', err);
     }
 
     return {
         status: 'healthy',
         service: 'auth-service',
         database: dbStatus,
-        timestamp: new Date().toISOString()
+        redis: redisStatus,
+        timestamp: new Date().toISOString(),
     };
 });
 
@@ -37,19 +90,31 @@ fastify.get('/health', async (request, reply) => {
 fastify.get('/', async (request, reply) => {
     return {
         message: 'FocusHub Auth Service',
-        version: '1.0.0'
+        version: '1.0.0',
     };
 });
+
+// Register routes
+fastify.register(authRoutes, { prefix: '/auth' });
 
 // Start server
 const start = async () => {
     try {
         await fastify.listen({ port: PORT, host: HOST });
-        console.log(`Auth Service running on http://${HOST}:${PORT}`);
+        logger.info(`Auth Service running on http://${HOST}:${PORT}`);
     } catch (err) {
-        fastify.log.error(err);
+        logger.error(err);
         process.exit(1);
     }
 };
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    logger.info('SIGTERM signal received: closing HTTP server');
+    await fastify.close();
+    await dbPool.end();
+    await redis.quit();
+    process.exit(0);
+});
 
 start();
