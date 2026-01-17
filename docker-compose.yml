@@ -1,0 +1,196 @@
+version: '3.8'
+
+networks:
+  focushub-network:
+    driver: bridge
+
+services:
+  # Redis Service
+  redis:
+    image: redis:7-alpine
+    container_name: focushub-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - focushub-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # Gateway Service
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: ../docker/Dockerfile.node
+    container_name: focushub-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - GATEWAY_PORT=3000
+      - GATEWAY_HOST=0.0.0.0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=development
+    networks:
+      - focushub-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./gateway:/usr/src/app
+      - /usr/src/app/node_modules
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: ../docker/Dockerfile.node
+    container_name: focushub-auth
+    ports:
+      - "3001:3001"
+    environment:
+      - AUTH_SERVICE_PORT=3001
+      - AUTH_SERVICE_HOST=0.0.0.0
+      - AUTH_DB_HOST=host.docker.internal
+      - AUTH_DB_PORT=5432
+      - AUTH_DB_NAME=focushub_auth
+      - AUTH_DB_USER=postgres
+      - AUTH_DB_PASSWORD=postgres
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=development
+    networks:
+      - focushub-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./auth-service:/usr/src/app
+      - /usr/src/app/node_modules
+
+  # Task Service
+  task-service:
+    build:
+      context: ./task-service
+      dockerfile: ../docker/Dockerfile.node
+    container_name: focushub-tasks
+    ports:
+      - "3002:3002"
+    environment:
+      - TASK_SERVICE_PORT=3002
+      - TASK_SERVICE_HOST=0.0.0.0
+      - TASK_DB_HOST=host.docker.internal
+      - TASK_DB_PORT=5432
+      - TASK_DB_NAME=focushub_tasks
+      - TASK_DB_USER=postgres
+      - TASK_DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=development
+    networks:
+      - focushub-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./task-service:/usr/src/app
+      - /usr/src/app/node_modules
+
+  # Focus Service
+  focus-service:
+    build:
+      context: ./focus-service
+      dockerfile: ../docker/Dockerfile.node
+    container_name: focushub-focus
+    ports:
+      - "3003:3003"
+    environment:
+      - FOCUS_SERVICE_PORT=3003
+      - FOCUS_SERVICE_HOST=0.0.0.0
+      - FOCUS_DB_HOST=host.docker.internal
+      - FOCUS_DB_PORT=5432
+      - FOCUS_DB_NAME=focushub_focus
+      - FOCUS_DB_USER=postgres
+      - FOCUS_DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=development
+    networks:
+      - focushub-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./focus-service:/usr/src/app
+      - /usr/src/app/node_modules
+
+  # Habit Service
+  habit-service:
+    build:
+      context: ./habit-service
+      dockerfile: ../docker/Dockerfile.node
+    container_name: focushub-habits
+    ports:
+      - "3004:3004"
+    environment:
+      - HABIT_SERVICE_PORT=3004
+      - HABIT_SERVICE_HOST=0.0.0.0
+      - HABIT_DB_HOST=host.docker.internal
+      - HABIT_DB_PORT=5432
+      - HABIT_DB_NAME=focushub_habits
+      - HABIT_DB_USER=postgres
+      - HABIT_DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=development
+    networks:
+      - focushub-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./habit-service:/usr/src/app
+      - /usr/src/app/node_modules
+
+  # Load Balancer
+  load-balancer:
+    build:
+      context: ./load-balancer
+      dockerfile: ../docker/Dockerfile.node
+    container_name: focushub-lb
+    ports:
+      - "8080:8080"
+    environment:
+      - LOAD_BALANCER_PORT=8080
+      - LOAD_BALANCER_HOST=0.0.0.0
+      - NODE_ENV=development
+    networks:
+      - focushub-network
+    depends_on:
+      - gateway
+      - auth-service
+      - task-service
+      - focus-service
+      - habit-service
+    restart: unless-stopped
+    volumes:
+      - ./load-balancer:/usr/src/app
+      - /usr/src/app/node_modules
+
+  # NGINX Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: focushub-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - focushub-network
+    depends_on:
+      - load-balancer
+    restart: unless-stopped
