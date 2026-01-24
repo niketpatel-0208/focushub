@@ -33,9 +33,9 @@ async function authRoutes(fastify, options) {
                 response.success(user, 'User registered successfully')
             );
         } catch (error) {
-            if (error.name === 'ZodError') {
+            if (error.validation) {
                 return reply.status(400).send(
-                    response.error(error.errors[0].message, 400)
+                    response.error(error.validation[0].message, 400)
                 );
             }
             throw error;
@@ -54,20 +54,29 @@ async function authRoutes(fastify, options) {
             },
         },
         handler: async (request, reply) => {
-            // Validate request body
-            const data = validate(authSchemas.login, request.body);
+            try {
+                // Validate request body
+                const data = validate(authSchemas.login, request.body);
 
-            // Login user
-            const result = await authService.loginUser(
-                fastify.db,
-                data.email,
-                data.password,
-                JWT_SECRET
-            );
+                // Login user
+                const result = await authService.loginUser(
+                    fastify.db,
+                    data.email,
+                    data.password,
+                    JWT_SECRET
+                );
 
-            return reply.send(
-                response.success(result, 'Login successful')
-            );
+                return reply.send(
+                    response.success(result, 'Login successful')
+                );
+            } catch (error) {
+                if (error.validation) {
+                    return reply.status(400).send(
+                        response.error(error.validation[0].message, 400)
+                    );
+                }
+                throw error;
+            }
         },
     });
 
