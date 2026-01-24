@@ -94,9 +94,9 @@ fastify.get('/', async (request, reply) => {
 
 // Register routes with authentication middleware
 const authMiddleware = createAuthMiddleware(process.env.JWT_SECRET);
-fastify.register(require('./routes/focus'), {
-    prefix: '',
-    preHandler: authMiddleware
+fastify.register(async function (fastify) {
+    fastify.addHook('preHandler', authMiddleware);
+    fastify.register(require('./routes/focus'));
 });
 
 // Graceful shutdown

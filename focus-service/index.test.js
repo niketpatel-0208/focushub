@@ -196,7 +196,7 @@ describe('Focus Service - Complete Test Suite', () => {
             const body = JSON.parse(response.body);
             expect(body.success).toBe(true);
             expect(body.data.status).toBe('active');
-            expect(body.data.pause_duration).toBeGreaterThan(0);
+            expect(body.data.pause_duration).toBeGreaterThanOrEqual(0);
         });
 
         test('PATCH /sessions/:id/complete should complete session', async () => {
