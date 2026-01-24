@@ -1,0 +1,19 @@
+{
+    "dev": {
+        "driver": "pg",
+        "host": "localhost",
+        "port": 5432,
+        "database": "focushub_focus",
+        "user": "niket",
+        "password": ""
+    },
+    "test": {
+        "driver": "pg",
+        "host": "localhost",
+        "port": 5432,
+        "database": "focushub_focus_test",
+        "user": "niket",
+        "password": ""
+    },
+    "sql-file": true
+}

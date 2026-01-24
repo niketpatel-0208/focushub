@@ -1,0 +1,9 @@
+module.exports = {
+    "migrationsDirectory": "migrations",
+    "driver": "pg",
+    "host": process.env.FOCUS_DB_HOST || "localhost",
+    "port": process.env.FOCUS_DB_PORT || 5432,
+    "database": process.env.FOCUS_DB_NAME || "focushub_focus",
+    "username": process.env.FOCUS_DB_USER || "niket",
+    "password": process.env.FOCUS_DB_PASSWORD || ""
+};
