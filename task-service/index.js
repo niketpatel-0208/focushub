@@ -117,6 +117,7 @@ const start = async () => {
     try {
         await fastify.listen({ port: PORT, host: HOST });
         logger.info(`Task Service running on http://${HOST}:${PORT}`);
+        logger.info(`Database connected: ${process.env.TASK_DB_NAME}`);
     } catch (err) {
         logger.error(err);
         process.exit(1);
@@ -132,4 +133,10 @@ process.on('SIGTERM', async () => {
     process.exit(0);
 });
 
-start();
+// Only start if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+    start();
+}
+
+// Export for testing
+module.exports = { app: fastify, pool: dbPool };
