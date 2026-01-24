@@ -222,7 +222,13 @@ async function updateUserProfile(db, userId, updates) {
     UPDATE users
     SET ${fieldsToUpdate.join(', ')}
     WHERE id = $${paramCount}
-    RETURNING id, email, username, first_name, last_name, is_verified, is_active, created_at, updated_at
+    RETURNING id, email, username, 
+              first_name as "firstName", 
+              last_name as "lastName", 
+              is_verified as "isVerified", 
+              is_active as "isActive", 
+              created_at as "createdAt", 
+              updated_at as "updatedAt"
   `;
 
     try {

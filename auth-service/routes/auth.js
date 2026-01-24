@@ -22,15 +22,24 @@ async function authRoutes(fastify, options) {
      * Register a new user
      */
     fastify.post('/register', async (request, reply) => {
-        // Validate request body
-        const data = validate(authSchemas.register, request.body);
+        try {
+            // Validate request body
+            const data = validate(authSchemas.register, request.body);
 
-        // Register user
-        const user = await authService.registerUser(fastify.db, data);
+            // Register user
+            const user = await authService.registerUser(fastify.db, data);
 
-        return reply.status(201).send(
-            response.success(user, 'User registered successfully')
-        );
+            return reply.status(201).send(
+                response.success(user, 'User registered successfully')
+            );
+        } catch (error) {
+            if (error.name === 'ZodError') {
+                return reply.status(400).send(
+                    response.error(error.errors[0].message, 400)
+                );
+            }
+            throw error;
+        }
     });
 
     /**
