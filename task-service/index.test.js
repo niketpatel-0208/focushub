@@ -298,7 +298,7 @@ describe('Task Service - Complete Test Suite', () => {
 
             expect(response.statusCode).toBe(200);
             const body = JSON.parse(response.body);
-            expect(body).toHaveProperty('pagination');
+            expect(body.meta).toHaveProperty('pagination');
         });
 
         test('GET /tasks/:id should return task details', async () => {

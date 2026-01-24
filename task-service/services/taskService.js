@@ -13,7 +13,7 @@ async function getTasks(db, userId, filters = {}) {
     const { status, priority, projectId, tagId, search, page = 1, limit = 20 } = filters;
 
     let query = `
-    SELECT DISTINCT t.*,
+    SELECT t.*,
       COALESCE(
         json_agg(
           DISTINCT jsonb_build_object('id', tags.id, 'name', tags.name, 'color', tags.color)
