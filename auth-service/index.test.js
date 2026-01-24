@@ -112,8 +112,6 @@ describe('Auth Service - Complete Test Suite', () => {
                 }
             });
 
-            console.log('Status:', response.statusCode);
-            console.log('Body:', response.body);
             expect(response.statusCode).toBe(400);
         });
 

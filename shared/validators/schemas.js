@@ -85,8 +85,9 @@ function validate(schema, data) {
         return schema.parse(data);
     } catch (error) {
         if (error instanceof z.ZodError) {
-            const formattedErrors = error.errors.map((err) => ({
-                field: err.path.join('.'),
+            // Safely map errors with fallback
+            const formattedErrors = (error.errors || []).map((err) => ({
+                field: err.path ? err.path.join('.') : 'unknown',
                 message: err.message,
             }));
             const err = new Error('Validation failed');
