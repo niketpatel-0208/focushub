@@ -22,24 +22,15 @@ async function authRoutes(fastify, options) {
      * Register a new user
      */
     fastify.post('/register', async (request, reply) => {
-        try {
-            // Validate request body
-            const data = validate(authSchemas.register, request.body);
+        // Validate request body
+        const data = validate(authSchemas.register, request.body);
 
-            // Register user
-            const user = await authService.registerUser(fastify.db, data);
+        // Register user
+        const user = await authService.registerUser(fastify.db, data);
 
-            return reply.status(201).send(
-                response.success(user, 'User registered successfully')
-            );
-        } catch (error) {
-            if (error.validation) {
-                return reply.status(400).send(
-                    response.error(error.validation[0].message, 400)
-                );
-            }
-            throw error;
-        }
+        return reply.status(201).send(
+            response.success(user, 'User registered successfully')
+        );
     });
 
     /**
@@ -54,29 +45,20 @@ async function authRoutes(fastify, options) {
             },
         },
         handler: async (request, reply) => {
-            try {
-                // Validate request body
-                const data = validate(authSchemas.login, request.body);
+            // Validate request body
+            const data = validate(authSchemas.login, request.body);
 
-                // Login user
-                const result = await authService.loginUser(
-                    fastify.db,
-                    data.email,
-                    data.password,
-                    JWT_SECRET
-                );
+            // Login user
+            const result = await authService.loginUser(
+                fastify.db,
+                data.email,
+                data.password,
+                JWT_SECRET
+            );
 
-                return reply.send(
-                    response.success(result, 'Login successful')
-                );
-            } catch (error) {
-                if (error.validation) {
-                    return reply.status(400).send(
-                        response.error(error.validation[0].message, 400)
-                    );
-                }
-                throw error;
-            }
+            return reply.send(
+                response.success(result, 'Login successful')
+            );
         },
     });
 
