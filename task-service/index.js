@@ -46,11 +46,14 @@ fastify.register(cors, {
     credentials: true,
 });
 
-fastify.register(rateLimit, {
-    max: 100,
-    timeWindow: '15 minutes',
-    redis,
-});
+// Only enable rate limiting in non-test environments
+if (process.env.NODE_ENV !== 'test') {
+    fastify.register(rateLimit, {
+        max: 100,
+        timeWindow: '15 minutes',
+        redis,
+    });
+}
 
 // Attach database pool and redis to fastify instance
 fastify.decorate('db', dbPool);
