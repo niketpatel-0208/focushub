@@ -41,7 +41,7 @@ fastify.get('/', async (request, reply) => {
     };
 });
 
-// Start server
+// Start server only if not in test mode
 const start = async () => {
     try {
         await fastify.listen({ port: PORT, host: HOST });
@@ -52,4 +52,10 @@ const start = async () => {
     }
 };
 
-start();
+// Only start server if this file is run directly (not imported for testing)
+if (require.main === module) {
+    start();
+}
+
+// Export for testing
+module.exports = { app: fastify, pool };
