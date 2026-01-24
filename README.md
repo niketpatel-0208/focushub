@@ -1,316 +1,544 @@
-# FocusHub - Backend Distributed System
+# FocusHub - Productivity & Focus Management Platform
 
-A production-ready backend microservices architecture for a comprehensive productivity and habit tracking platform.
+> A comprehensive productivity platform that helps you manage tasks, track focus sessions using the Pomodoro technique, and maintain productive habits.
 
-## 🏗️ Architecture Overview
+## 🎯 What is FocusHub?
 
-FocusHub is built as a distributed system using a microservices architecture with the following components:
+**FocusHub** is a productivity app that helps you:
+- **Manage Tasks**: Create, organize, and track your work
+- **Focus Better**: Use Pomodoro-style timers to work in focused bursts
+- **Build Habits**: (Coming in Phase 4) Track and maintain daily habits
 
-```
-┌──────────────┐
-│    NGINX     │  Port 80
-│ Reverse Proxy│
-└──────┬───────┘
-       │
-┌──────▼───────────┐
-│  Load Balancer   │  Port 8080
-│    (Custom)      │
-└──────┬───────────┘
-       │
-┌──────▼───────────┐
-│   API Gateway    │  Port 3000
-└──────┬───────────┘
-       │
-       ├─────────────┬─────────────┬─────────────┬─────────────┐
-       │             │             │             │             │
-┌──────▼──────┐ ┌───▼────┐  ┌─────▼─────┐ ┌─────▼─────┐ ┌────▼────┐
-│Auth Service │ │  Task  │  │   Focus   │ │   Habit   │ │  Redis  │
-│  Port 3001  │ │  3002  │  │   3003    │ │   3004    │ │  6379   │
-└─────────────┘ └────────┘  └───────────┘ └───────────┘ └─────────┘
-       │             │             │             │
-┌──────▼─────────────▼─────────────▼─────────────▼──────┐
-│              PostgreSQL (Local)                        │
-│  focushub_auth | focushub_tasks | focushub_focus |    │
-│                 focushub_habits                        │
-└────────────────────────────────────────────────────────┘
-```
-
-## 🚀 Tech Stack
-
-### Core Technologies
-- **Runtime**: Node.js 20 (ARM64 compatible)
-- **Web Framework**: Fastify (high-performance)
-- **Database**: PostgreSQL 14
-- **Cache/Rate Limiting**: Redis 7
-- **Process Manager**: Nodemon (development)
-- **Configuration**: dotenv
-
-### Infrastructure
-- **Containerization**: Docker + Docker Compose
-- **Reverse Proxy**: NGINX
-- **Load Balancing**: Custom Node.js Load Balancer
-- **Architecture**: Microservices with API Gateway pattern
-
-## 📁 Project Structure
-
-```
-focushub/
-├── gateway/              # API Gateway - Request routing and aggregation
-├── auth-service/         # Authentication and authorization
-├── task-service/         # Task management
-├── focus-service/        # Focus session tracking
-├── habit-service/        # Habit tracking
-├── load-balancer/        # Custom load balancer
-├── nginx/                # NGINX reverse proxy configuration
-├── shared/               # Shared utilities and types
-├── docker/               # Docker configurations
-│   └── Dockerfile.node   # Node.js services Dockerfile
-├── docker-compose.yml    # Multi-container orchestration
-├── .env.example          # Environment variable template
-├── .env                  # Local environment configuration
-├── .gitignore           
-└── README.md
-```
-
-## 🛠️ Local Development Setup
-
-### Prerequisites
-
-Ensure you have the following installed:
-- **macOS**: Apple Silicon (ARM64)
-- **Node.js**: v20 or higher
-- **PostgreSQL**: v14 or higher
-- **Docker Desktop**: For Apple Silicon
-- **Git**: Version control
-
-### Installation Steps
-
-1. **Clone the repository** (if applicable):
-   ```bash
-   cd focushub
-   ```
-
-2. **Start PostgreSQL** (if not already running):
-   ```bash
-   brew services start postgresql@14
-   ```
-
-3. **Verify databases exist**:
-   ```bash
-   psql -d postgres -c "\l" | grep focushub
-   ```
-   
-   You should see:
-   - focushub_auth
-   - focushub_tasks
-   - focushub_focus
-   - focushub_habits
-
-4. **Install dependencies for all services**:
-   ```bash
-   # Gateway
-   cd gateway && npm install && cd ..
-   
-   # Auth Service
-   cd auth-service && npm install && cd ..
-   
-   # Task Service
-   cd task-service && npm install && cd ..
-   
-   # Focus Service
-   cd focus-service && npm install && cd ..
-   
-   # Habit Service
-   cd habit-service && npm install && cd ..
-   
-   # Load Balancer
-   cd load-balancer && npm install && cd ..
-   ```
-
-5. **Configure environment variables**:
-   ```bash
-   # Already created, but verify .env exists
-   cat .env
-   ```
-
-## 🐳 Running with Docker
-
-### Start all services with Docker Compose:
-
-```bash
-docker-compose up --build
-```
-
-This will start:
-- Redis (port 6379)
-- Gateway (port 3000)
-- Auth Service (port 3001)
-- Task Service (port 3002)
-- Focus Service (port 3003)
-- Habit Service (port 3004)
-- Load Balancer (port 8080)
-- NGINX (port 80)
-
-### Stop all services:
-
-```bash
-docker-compose down
-```
-
-### View logs:
-
-```bash
-# All services
-docker-compose logs -f
-
-# Specific service
-docker-compose logs -f auth-service
-```
-
-## 💻 Running Services Locally (Without Docker)
-
-### Start Redis with Docker:
-```bash
-docker run -d -p 6379:6379 --name focushub-redis redis:7-alpine
-```
-
-### Start individual services:
-
-```bash
-# Terminal 1 - Gateway
-cd gateway && npm run dev
-
-# Terminal 2 - Auth Service
-cd auth-service && npm run dev
-
-# Terminal 3 - Task Service
-cd task-service && npm run dev
-
-# Terminal 4 - Focus Service
-cd focus-service && npm run dev
-
-# Terminal 5 - Habit Service
-cd habit-service && npm run dev
-
-# Terminal 6 - Load Balancer
-cd load-balancer && npm run dev
-```
-
-## 🔍 Health Checks
-
-Each service exposes a `/health` endpoint:
-
-```bash
-# Gateway
-curl http://localhost:3000/health
-
-# Auth Service
-curl http://localhost:3001/health
-
-# Task Service
-curl http://localhost:3002/health
-
-# Focus Service
-curl http://localhost:3003/health
-
-# Habit Service
-curl http://localhost:3004/health
-
-# Load Balancer
-curl http://localhost:8080/health
-
-# Via NGINX
-curl http://localhost/health
-```
-
-Expected response:
-```json
-{
-  "status": "healthy",
-  "service": "service-name",
-  "database": "connected",
-  "timestamp": "2026-01-18T02:50:14.000Z"
-}
-```
-
-## 🌐 Service Endpoints
-
-| Service | Port | Endpoint |
-|---------|------|----------|
-| NGINX | 80 | http://localhost |
-| Load Balancer | 8080 | http://localhost:8080 |
-| Gateway | 3000 | http://localhost:3000 |
-| Auth Service | 3001 | http://localhost:3001 |
-| Task Service | 3002 | http://localhost:3002 |
-| Focus Service | 3003 | http://localhost:3003 |
-| Habit Service | 3004 | http://localhost:3004 |
-| Redis | 6379 | localhost:6379 |
-
-## 📊 Database Information
-
-Each service has its own PostgreSQL database:
-
-- **focushub_auth**: User authentication and profiles
-- **focushub_tasks**: Task and project management
-- **focushub_focus**: Focus sessions and time tracking
-- **focushub_habits**: Habit tracking and streaks
-
-Connection settings are in `.env` file.
-
-## 🔧 Development Scripts
-
-Each service supports:
-
-```bash
-npm start       # Production mode
-npm run dev     # Development mode with nodemon (auto-reload)
-```
-
-## 🐛 Troubleshooting
-
-### PostgreSQL connection issues:
-```bash
-# Check if PostgreSQL is running
-brew services list | grep postgres
-
-# Start PostgreSQL
-brew services start postgresql@14
-```
-
-### Docker issues:
-```bash
-# Ensure Docker Desktop is running
-docker info
-
-# Clean up containers
-docker-compose down -v
-docker system prune
-```
-
-### Port conflicts:
-```bash
-# Check what's using a port
-lsof -i :3000
-
-# Kill process on port
-kill -9 <PID>
-```
-
-## 🚦 Next Steps
-
-1. **Implement service-specific routes** in each microservice
-2. **Add authentication middleware** to Gateway
-3. **Implement load balancing logic** in Load Balancer
-4. **Setup database migrations** for each service
-5. **Add API documentation** with Swagger/OpenAPI
-6. **Implement monitoring** with Prometheus/Grafana
-7. **Add centralized logging** with ELK stack
-8. **Setup CI/CD pipeline** with GitHub Actions
-
-## 📝 License
-
-This project is for educational and development purposes.
+**Think of it as**: Todoist + Forest App + Habitica combined into one productivity system.
 
 ---
 
-**Built with ❤️ using Node.js, Fastify, PostgreSQL, Redis, and Docker**
+## 🏗️ Architecture - Simple Explanation
+
+### Microservices Design
+
+Instead of one giant application, FocusHub is split into separate "mini-services":
+
+```
+┌─────────────────────────────────────────────┐
+│         NGINX (Reverse Proxy)               │
+│         Routes incoming requests            │
+└─────────────────┬───────────────────────────┘
+                  │
+        ┌─────────┴─────────┐
+        │                   │
+┌───────▼────────┐    ┌────▼──────────┐
+│  Load Balancer │    │    Gateway    │
+│  (Distribution)│    │  (API Router) │
+└───────┬────────┘    └────┬──────────┘
+        │                  │
+    ┌───┴────┬─────────────┼──────────────┐
+    │        │             │              │
+┌───▼───┐ ┌─▼────┐  ┌─────▼─────┐  ┌────▼─────┐
+│ Auth  │ │ Task │  │   Focus   │  │  Habit   │
+│Service│ │Service│  │  Service  │  │ Service  │
+│       │ │       │  │           │  │ (Future) │
+└───┬───┘ └──┬───┘  └─────┬─────┘  └────┬─────┘
+    │        │            │              │
+┌───▼────────▼────────────▼──────────────▼─────┐
+│          PostgreSQL Database                  │
+│  (Separate DBs for each service)              │
+└───────────────────────────────────────────────┘
+```
+
+**Why microservices?**
+- Each service can be developed independently
+- Easier to scale (add more servers for busy services)
+- If one service crashes, others keep working
+- Different teams can work on different services
+
+---
+
+## 📦 Current Status - Phase 3 Complete
+
+### ✅ Phase 1: Authentication Service (Complete)
+**What it does**: Manages user accounts and login
+
+**Features**:
+- User registration
+- Login/logout
+- Password management
+- JWT tokens for security
+- Profile updates
+
+**API Endpoints**: 7  
+**Tests**: 17/17 passing ✅
+
+---
+
+### ✅ Phase 2: Task Management Service (Complete)
+**What it does**: Helps you organize your work
+
+**Features**:
+- **Projects**: Group related tasks (e.g., "Build Website", "Learn Python")
+- **Tasks**: Individual work items with:
+  - Title, description, due dates
+  - Priority levels (low, medium, high, urgent)
+  - Status tracking (todo, in_progress, completed)
+- **Tags**: Categorize tasks (#work, #personal, #urgent)
+- **Smart Search**: Find tasks by keywords
+- **Filtering**: View tasks by status, priority, project, tags
+- **Statistics**: See how many tasks completed, overdue, etc.
+
+**API Endpoints**: 22  
+**Tests**: 23/23 passing ✅
+
+**Example Use Case**:
+```
+Project: "Launch Mobile App"
+  ├─ Task: Design UI mockups [High Priority]
+  ├─ Task: Build authentication [Urgent]
+  └─ Task: Write documentation [Medium Priority]
+```
+
+---
+
+### ✅ Phase 3: Focus Session Service (Complete) 🎉
+**What it does**: Helps you focus using the Pomodoro Technique
+
+**The Pomodoro Technique** (explained simply):
+1. Choose a task
+2. Set a timer for 25 minutes (one "Pomodoro")
+3. Work without distractions until timer rings
+4. Take a 5-minute break
+5. Repeat!
+
+**Features**:
+- **Start Focus Sessions**: Begin a 25-minute focus timer
+- **Pause/Resume**: Handle interruptions without losing progress
+- **Track Time**: Accurate tracking of:
+  - How long you worked
+  - How long you paused
+  - Number of interruptions
+- **Complete/Cancel**: Mark sessions as done or cancelled
+- **Rich Analytics**: See your focus patterns:
+  - Total focus time per day/week/month
+  - Completion rates
+  - Most productive hours
+  - Average interruptions
+- **Task Integration**: Link sessions to specific tasks
+
+**API Endpoints**: 9  
+**Tests**: 22/22 passing ✅
+
+**Example Workflow**:
+```
+1. Start session → Timer begins (25:00)
+2. Work on "Build login feature"
+3. Phone rings → Pause (worked 15:30)
+4. After call → Resume
+5. Timer ends → Complete session
+   ✓ Worked: 25 minutes
+   ✓ Breaks: 3 minutes  
+   ✓ Interruptions: 1
+```
+
+**Analytics Dashboard** (what you'll see):
+```
+This Week:
+  Total Sessions: 24
+  Completed: 20 (83% completion rate)
+  Total Focus Time: 10 hours
+  Most Productive: 9-11 AM
+  Average Interruptions: 1.2 per session
+```
+
+---
+
+## 🗄️ Database Migrations - Explained Simply
+
+### What Are Migrations?
+
+**Simple Analogy**: Building Instructions for Your Database
+
+Imagine you're building with LEGO:
+- **Without migrations**: You tell each friend verbally how to build it → everyone's version is different
+- **With migrations**: You write step-by-step instructions → everyone builds the same thing
+
+**Migrations are scripts that**:
+1. Create tables (e.g., `users`, `tasks`, `focus_sessions`)
+2. Add columns (e.g., add `priority` field to tasks)
+3. Modify structure (e.g., change column types)
+4. Can be undone/rolled back
+
+### Example Migration (Focus Sessions)
+
+```sql
+-- Migration: Create focus_sessions table
+CREATE TABLE focus_sessions (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL,
+  status VARCHAR(20) DEFAULT 'active',
+  started_at TIMESTAMP DEFAULT NOW(),
+  elapsed_time INTEGER DEFAULT 0
+);
+
+-- Add indexes for fast lookups
+CREATE INDEX idx_user_id ON focus_sessions(user_id);
+```
+
+### Why Migrations Are Essential
+
+✅ **Team Collaboration**: Everyone runs the same migrations → same database  
+✅ **Deployment**: Production server auto-creates tables  
+✅ **Version Control**: Track database changes like code  
+✅ **Rollback**: Undo changes if something breaks  
+✅ **Documentation**: Clear history of what changed when
+
+### Migration Files in FocusHub
+
+```
+focus-service/migrations/
+├── 20260124181448-create-focus-sessions-table.js  # Main migration file
+└── sqls/
+    ├── *-up.sql    # Commands to CREATE tables
+    └── *-down.sql  # Commands to DROP tables (rollback)
+```
+
+**Commands**:
+```bash
+# Apply migrations (create tables)
+npx db-migrate up
+
+# Undo last migration (drop tables)
+npx db-migrate down
+
+# Check migration status
+npx db-migrate status
+```
+
+### Should You Commit Migrations? **YES!**
+
+**Commit**:
+- ✅ Migration files (`*.js`, `*.sql`)
+- ✅ Migration config (`migrations.json`, `database.json`)
+
+**Don't Commit**:
+- ❌ Actual database files
+- ❌ Environment variables (`.env`)
+
+**In Git**:
+```
+✅ migrations/20260124181448-create-focus-sessions-table.js
+✅ migrations/sqls/20260124181448-up.sql
+❌ .env (contains passwords)
+❌ database data files
+```
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+- Node.js 18+ installed
+- PostgreSQL installed
+- Redis installed (for rate limiting)
+
+### Setup Steps
+
+```bash
+# 1. Clone repository
+git clone https://github.com/niketpatel-0208/focushub.git
+cd focushub
+
+# 2. Install dependencies
+cd auth-service && npm install
+cd ../task-service && npm install
+cd ../focus-service && npm install
+
+# 3. Set up environment variables
+cp .env.example .env
+# Edit .env with your database credentials
+
+# 4. Create databases
+createdb focushub_auth
+createdb focushub_tasks
+createdb focushub_focus
+
+# 5. Run migrations
+cd auth-service && npx db-migrate up
+cd ../task-service && npx db-migrate up
+cd ../focus-service && npx db-migrate up
+
+# 6. Start services
+cd auth-service && npm run dev     # Port 3001
+cd task-service && npm run dev     # Port 3002
+cd focus-service && npm run dev    # Port 3003
+```
+
+### Testing
+
+```bash
+# Run all tests
+cd auth-service && NODE_ENV=test npm test
+cd task-service && NODE_ENV=test npm test
+cd focus-service && NODE_ENV=test npm test
+
+# Should see:
+# Auth: 17/17 passing ✅
+# Tasks: 23/23 passing ✅
+# Focus: 22/22 passing ✅
+```
+
+---
+
+## 📱 How to Use (API Examples)
+
+### 1. Register & Login
+
+```bash
+# Register
+curl -X POST http://localhost:3001/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"secure123","username":"yourname"}'
+
+# Login (get token)
+curl -X POST http://localhost:3001/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"secure123"}'
+
+# Response includes: "accessToken": "eyJhbG..."
+```
+
+### 2. Create a Task
+
+```bash
+curl -X POST http://localhost:3002/tasks \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Build user dashboard",
+    "priority": "high",
+    "dueDate": "2026-01-30",
+    "tags": ["work", "frontend"]
+  }'
+```
+
+### 3. Start a Focus Session
+
+```bash
+# Start 25-minute focus session
+curl -X POST http://localhost:3003/sessions \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"plannedDuration": 1500}'
+
+# Pause session
+curl -X PATCH http://localhost:3003/sessions/{SESSION_ID}/pause \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Resume session
+curl -X PATCH http://localhost:3003/sessions/{SESSION_ID}/resume \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Complete session
+curl -X PATCH http://localhost:3003/sessions/{SESSION_ID}/complete \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"notes": "Great session!"}'
+```
+
+### 4. View Statistics
+
+```bash
+# Task statistics
+curl -X GET http://localhost:3002/tasks/stats \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Focus statistics (weekly)
+curl -X GET http://localhost:3003/stats?period=week \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+---
+
+## 🧪 Testing Summary
+
+| Service | Endpoints | Tests | Status |
+|---------|-----------|-------|--------|
+| Auth Service | 7 | 17/17 | ✅ 100% |
+| Task Service | 22 | 23/23 | ✅ 100% |
+| Focus Service | 9 | 22/22 | ✅ 100% |
+| **Total** | **38** | **62/62** | **✅ 100%** |
+
+---
+
+## 🛠️ Tech Stack
+
+**Backend**:
+- **Node.js** - JavaScript runtime
+- **Fastify** - Fast web framework
+- **PostgreSQL** - Reliable database
+- **Redis** - Caching & rate limiting
+- **JWT** - Secure authentication
+- **Zod** - Input validation
+
+**Testing**:
+- **Jest** - Testing framework
+- **Supertest** - API testing
+
+**DevOps**:
+- **NGINX** - Reverse proxy
+- **db-migrate** - Database migrations
+- **dotenv** - Environment config
+
+---
+
+## 📂 Project Structure
+
+```
+focushub/
+├── .env                      # Environment variables (don't commit!)
+├── .env.example              # Template for .env
+├── .gitignore                # Git ignore rules
+│
+├── shared/                   # Code shared across services
+│   ├── utils/                # Utilities (database, JWT, logger)
+│   ├── middleware/           # Auth, error handling
+│   └── validators/           # Zod schemas
+│
+├── auth-service/             # User authentication
+│   ├── index.js              # Server setup
+│   ├── index.test.js         # Tests (17)
+│   ├── routes/               # API endpoints
+│   ├── services/             # Business logic
+│   ├── migrations/           # Database setup scripts
+│   └── package.json
+│
+├── task-service/             # Task management
+│   ├── index.js
+│   ├── index.test.js         # Tests (23)
+│   ├── routes/               # Tasks, projects, tags
+│   ├── services/
+│   ├── migrations/
+│   └── package.json
+│
+├── focus-service/            # Focus session tracking
+│   ├── index.js
+│   ├── index.test.js         # Tests (22)
+│   ├── routes/               # Session endpoints
+│   ├── services/
+│   ├── migrations/           # focus_sessions table
+│   └── package.json
+│
+├── gateway/                  # API gateway (future)
+├── load-balancer/            # Load distribution
+└── nginx/                    # Reverse proxy config
+```
+
+---
+
+## 🔐 Security Features
+
+✅ **Password Hashing** (bcrypt)  
+✅ **JWT Authentication** (stateless tokens)  
+✅ **Rate Limiting** (prevent abuse)  
+✅ **Input Validation** (Zod schemas)  
+✅ **SQL Injection Protection** (parameterized queries)  
+✅ **CORS** (cross-origin security)  
+✅ **Environment Variables** (secrets not in code)
+
+---
+
+## 🚦 Roadmap
+
+- [x] **Phase 1**: Authentication System
+- [x] **Phase 2**: Task Management  
+- [x] **Phase 3**: Focus Session Tracking
+- [ ] **Phase 4**: Habit Tracking
+- [ ] **Phase 5**: Analytics Dashboard
+- [ ] **Phase 6**: Mobile App (React Native)
+- [ ] **Phase 7**: Team Collaboration
+
+---
+
+## 📚 Documentation
+
+- [Phase 1 Walkthrough](docs/phase1-walkthrough.md) - Auth implementation
+- [Phase 2 Testing Guide](docs/phase2-testing.md) - Task service tests
+- [Phase 3 Walkthrough](docs/phase3-walkthrough.md) - Focus service complete guide
+- [API Documentation](docs/api-reference.md) - All endpoints
+- [Database Schema](docs/database-schema.md) - Table structures
+
+---
+
+## 🤝 Contributing
+
+```bash
+# Create feature branch
+git checkout -b feature/your-feature
+
+# Make changes and test
+npm test
+
+# Commit with meaningful message
+git commit -m "feat: add new feature"
+
+# Push and create PR
+git push origin feature/your-feature
+```
+
+**Branch Naming**:
+- `feature/*` - New features
+- `fix/*` - Bug fixes
+- `phase*/*` - Major phase work
+
+---
+
+## 📝 License
+
+MIT License - Feel free to use this project for learning or production!
+
+---
+
+## 💪 What You've Built
+
+### Phase 3 Achievements
+
+You now have a **production-ready focus tracking system** that:
+
+✅ Tracks work sessions with accurate timing  
+✅ Handles pause/resume with interruption counting  
+✅ Provides rich productivity analytics  
+✅ Integrates with your task management  
+✅ Has 100% test coverage (22/22 tests passing)  
+✅ Uses proper database migrations  
+✅ Follows enterprise best practices
+
+**Real-world comparison**: The focus service is similar to what apps like **Forest**, **Focus@Will**, or **Toggl Track** provide, but integrated into your own productivity platform.
+
+---
+
+## 🎓 Learning Outcomes
+
+From building FocusHub, you've learned:
+
+**Backend Development**:
+- Microservices architecture
+- RESTful API design
+- Database design & migrations
+- Authentication (JWT)
+- Testing (unit tests)
+
+**Software Engineering**:
+- Git workflows & branching
+- Code organization
+- Documentation
+- Error handling
+- Security best practices
+
+**DevOps**:
+- Environment configuration
+- Database migrations
+- Service deployment
+- Testing strategies
+
+---
+
+**Built with ❤️ by Niket Patel**
+
+*Making productivity effortless, one Pomodoro at a time* 🍅
