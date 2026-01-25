@@ -18,6 +18,7 @@ const { createAuthMiddleware } = require('./middleware/auth');
 const { authSchemas, commonSchemas, validate } = require('./validators/schemas');
 const { projectSchemas, taskSchemas, tagSchemas } = require('./validators/taskSchemas');
 const { focusSchemas } = require('./validators/focusSchemas');
+const { habitSchemas } = require('./validators/habitSchemas');
 
 module.exports = {
     // Utils
