@@ -7,11 +7,7 @@ async function habitRoutes(fastify, options) {
     const habitService = new HabitService(fastify.pool);
 
     // POST /habits - Create habit
-    fastify.post('/habits', {
-        schema: {
-            body: habitSchemas.createHabit
-        }
-    }, async (request, reply) => {
+    fastify.post('/habits', async (request, reply) => {
         const habit = await habitService.createHabit(request.userId, request.body);
         return reply.code(201).send({
             success: true,
@@ -21,11 +17,7 @@ async function habitRoutes(fastify, options) {
     });
 
     // GET /habits - List habits
-    fastify.get('/habits', {
-        schema: {
-            querystring: habitSchemas.listHabitsQuery
-        }
-    }, async (request, reply) => {
+    fastify.get('/habits', async (request, reply) => {
         const result = await habitService.getHabits(request.userId, request.query);
         return {
             success: true,
@@ -44,11 +36,7 @@ async function habitRoutes(fastify, options) {
     });
 
     // PUT /habits/:id - Update habit
-    fastify.put('/habits/:id', {
-        schema: {
-            body: habitSchemas.updateHabit
-        }
-    }, async (request, reply) => {
+    fastify.put('/habits/:id', async (request, reply) => {
         const habit = await habitService.updateHabit(request.params.id, request.userId, request.body);
         return {
             success: true,
@@ -77,11 +65,7 @@ async function habitRoutes(fastify, options) {
     });
 
     // POST /habits/:id/complete - Log completion
-    fastify.post('/habits/:id/complete', {
-        schema: {
-            body: habitSchemas.logCompletion
-        }
-    }, async (request, reply) => {
+    fastify.post('/habits/:id/complete', async (request, reply) => {
         const log = await habitService.logCompletion(request.params.id, request.userId, request.body);
         return reply.code(201).send({
             success: true,
@@ -100,11 +84,7 @@ async function habitRoutes(fastify, options) {
     });
 
     // GET /habits/:id/logs - Get completion logs
-    fastify.get('/habits/:id/logs', {
-        schema: {
-            querystring: habitSchemas.logsQuery
-        }
-    }, async (request, reply) => {
+    fastify.get('/habits/:id/logs', async (request, reply) => {
         const logs = await habitService.getHabitLogs(request.params.id, request.userId, request.query);
         return {
             success: true,
@@ -122,11 +102,7 @@ async function habitRoutes(fastify, options) {
     });
 
     // GET /stats - Get habit statistics
-    fastify.get('/stats', {
-        schema: {
-            querystring: habitSchemas.statsQuery
-        }
-    }, async (request, reply) => {
+    fastify.get('/stats', async (request, reply) => {
         const stats = await habitService.getHabitStats(request.userId, request.query);
         return {
             success: true,
