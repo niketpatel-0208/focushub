@@ -1,5 +1,6 @@
-const { habitSchemas } = require('../../shared');
-const { ApiError } = require('../../shared');
+const shared = require('../../shared');
+const { habitSchemas } = shared;
+const { ApiError } = shared;
 
 async function habitRoutes(fastify, options) {
     const HabitService = require('../services/habitService');
