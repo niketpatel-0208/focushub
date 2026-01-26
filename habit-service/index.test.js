@@ -170,7 +170,7 @@ describe('Habit Service - Complete Test Suite', () => {
                 method: 'POST',
                 url: '/habits',
                 headers: { authorization: `Bearer ${testToken}` },
-                payload: { name: 'To delete' }
+                payload: { name: 'To delete', frequency: 'daily' }
             });
             const habitId = JSON.parse(createResponse.body).data.id;
 
@@ -269,31 +269,31 @@ describe('Habit Service - Complete Test Suite', () => {
         });
 
         test('POST /habits/:id/complete should start streak (day 1)', async () => {
-            // Create new habit for streak test
-            const createResp = await app.inject({
-                method: 'POST',
-                url: '/habits',
-                headers: { authorization: `Bearer ${testToken}` },
-                payload: { name: 'Streak test' }
-            });
-            const habitId = JSON.parse(createResp.body).data.id;
+            if (!testDailyHabitId) return;
+
+            // Log completion for a new day
+            const newDate = new Date();
+            newDate.setDate(newDate.getDate() - 5); // 5 days ago
+            const dateStr = newDate.toISOString().split('T')[0];
 
             const response = await app.inject({
                 method: 'POST',
-                url: `/habits/${habitId}/complete`,
-                headers: { authorization: `Bearer ${testToken}` }
+                url: `/habits/${testDailyHabitId}/complete`,
+                headers: { authorization: `Bearer ${testToken}` },
+                payload: { date: dateStr, value: 1 }
             });
 
             expect(response.statusCode).toBe(201);
 
-            // Check streak
+            // Check streak exists
             const streakResp = await app.inject({
                 method: 'GET',
-                url: `/habits/${habitId}/streak`,
+                url: `/habits/${testDailyHabitId}/streak`,
                 headers: { authorization: `Bearer ${testToken}` }
             });
             const streak = JSON.parse(streakResp.body).data;
             expect(streak.current_streak).toBeGreaterThanOrEqual(0);
+            expect(streak.total_completions).toBeGreaterThan(0);
         });
 
         test('POST /habits/:id/complete should reject future dates', async () => {

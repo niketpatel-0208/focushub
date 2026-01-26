@@ -8,7 +8,7 @@ async function habitRoutes(fastify, options) {
 
     // POST /habits - Create habit
     fastify.post('/habits', async (request, reply) => {
-        const habit = await habitService.createHabit(request.userId, request.body);
+        const habit = await habitService.createHabit(request.user.userId, request.body);
         return reply.code(201).send({
             success: true,
             message: 'Habit created successfully',
@@ -18,7 +18,7 @@ async function habitRoutes(fastify, options) {
 
     // GET /habits - List habits
     fastify.get('/habits', async (request, reply) => {
-        const result = await habitService.getHabits(request.userId, request.query);
+        const result = await habitService.getHabits(request.user.userId, request.query);
         return {
             success: true,
             data: result.habits,
@@ -28,7 +28,7 @@ async function habitRoutes(fastify, options) {
 
     // GET /habits/:id - Get habit by ID
     fastify.get('/habits/:id', async (request, reply) => {
-        const habit = await habitService.getHabitById(request.params.id, request.userId);
+        const habit = await habitService.getHabitById(request.params.id, request.user.userId);
         return {
             success: true,
             data: habit
@@ -37,7 +37,7 @@ async function habitRoutes(fastify, options) {
 
     // PUT /habits/:id - Update habit
     fastify.put('/habits/:id', async (request, reply) => {
-        const habit = await habitService.updateHabit(request.params.id, request.userId, request.body);
+        const habit = await habitService.updateHabit(request.params.id, request.user.userId, request.body);
         return {
             success: true,
             message: 'Habit updated successfully',
@@ -47,7 +47,7 @@ async function habitRoutes(fastify, options) {
 
     // DELETE /habits/:id - Delete habit
     fastify.delete('/habits/:id', async (request, reply) => {
-        await habitService.deleteHabit(request.params.id, request.userId);
+        await habitService.deleteHabit(request.params.id, request.user.userId);
         return {
             success: true,
             message: 'Habit deleted successfully'
@@ -56,7 +56,7 @@ async function habitRoutes(fastify, options) {
 
     // PATCH /habits/:id/archive - Archive habit
     fastify.patch('/habits/:id/archive', async (request, reply) => {
-        const habit = await habitService.archiveHabit(request.params.id, request.userId, true);
+        const habit = await habitService.archiveHabit(request.params.id, request.user.userId, true);
         return {
             success: true,
             message: 'Habit archived successfully',
@@ -66,7 +66,7 @@ async function habitRoutes(fastify, options) {
 
     // POST /habits/:id/complete - Log completion
     fastify.post('/habits/:id/complete', async (request, reply) => {
-        const log = await habitService.logCompletion(request.params.id, request.userId, request.body);
+        const log = await habitService.logCompletion(request.params.id, request.user.userId, request.body);
         return reply.code(201).send({
             success: true,
             message: 'Completion logged successfully',
@@ -76,7 +76,7 @@ async function habitRoutes(fastify, options) {
 
     // DELETE /habits/:id/logs/:date - Remove completion
     fastify.delete('/habits/:id/logs/:date', async (request, reply) => {
-        await habitService.removeCompletion(request.params.id, request.userId, request.params.date);
+        await habitService.removeCompletion(request.params.id, request.user.userId, request.params.date);
         return {
             success: true,
             message: 'Completion removed successfully'
@@ -85,7 +85,7 @@ async function habitRoutes(fastify, options) {
 
     // GET /habits/:id/logs - Get completion logs
     fastify.get('/habits/:id/logs', async (request, reply) => {
-        const logs = await habitService.getHabitLogs(request.params.id, request.userId, request.query);
+        const logs = await habitService.getHabitLogs(request.params.id, request.user.userId, request.query);
         return {
             success: true,
             data: logs
@@ -94,7 +94,7 @@ async function habitRoutes(fastify, options) {
 
     // GET /habits/:id/streak - Get streak info
     fastify.get('/habits/:id/streak', async (request, reply) => {
-        const streak = await habitService.getHabitStreak(request.params.id, request.userId);
+        const streak = await habitService.getHabitStreak(request.params.id, request.user.userId);
         return {
             success: true,
             data: streak
@@ -103,7 +103,7 @@ async function habitRoutes(fastify, options) {
 
     // GET /stats - Get habit statistics
     fastify.get('/stats', async (request, reply) => {
-        const stats = await habitService.getHabitStats(request.userId, request.query);
+        const stats = await habitService.getHabitStats(request.user.userId, request.query);
         return {
             success: true,
             data: stats

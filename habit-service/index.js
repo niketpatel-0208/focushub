@@ -4,7 +4,7 @@ const cors = require('@fastify/cors');
 const rateLimit = require('@fastify/rate-limit');
 const { Pool } = require('pg');
 const Redis = require('ioredis');
-const { authenticateToken, errorHandler } = require('../shared');
+const { createAuthMiddleware, errorHandler } = require('../shared');
 
 // Database pool
 const pool = new Pool({
@@ -64,6 +64,9 @@ fastify.get('/', async (request, reply) => {
         endpoints: 11,
     };
 });
+
+// Create auth middleware
+const authenticateToken = createAuthMiddleware(process.env.JWT_SECRET);
 
 // Register auth middleware for protected routes
 fastify.addHook('onRequest', async (request, reply) => {
