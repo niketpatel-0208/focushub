@@ -1,6 +1,5 @@
 const { app, pool, redis } = require('./index');
 const shared = require('../shared');
-const { jwt } = shared;
 
 describe('Habit Service - Complete Test Suite', () => {
     let testToken;
@@ -9,7 +8,10 @@ describe('Habit Service - Complete Test Suite', () => {
     let testDailyHabitId;
 
     beforeAll(() => {
-        testToken = jwt.generate({ userId: testUserId });
+        testToken = shared.jwt.generateAccessToken(
+            { userId: testUserId, email: 'test@test.com', username: 'testuser' },
+            process.env.JWT_SECRET
+        );
     });
 
     afterAll(async () => {
@@ -434,7 +436,10 @@ describe('Habit Service - Complete Test Suite', () => {
 
         test('GET /habits should handle empty habit list', async () => {
             const newUserId = '00000000-0000-0000-0000-000000000001';
-            const newToken = jwt.generate({ userId: newUserId });
+            const newToken = shared.jwt.generateAccessToken(
+                { userId: newUserId, email: 'new@test.com', username: 'newuser' },
+                process.env.JWT_SECRET
+            );
 
             const response = await app.inject({
                 method: 'GET',

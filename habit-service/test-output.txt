@@ -1,0 +1,325 @@
+
+> habit-service@1.0.0 test
+> jest --coverage --runInBand
+
+  console.log
+    [dotenv@17.2.3] injecting env (38) from ../.env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+      at _log (node_modules/dotenv/lib/main.js:142:11)
+
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+[09:28:07 UTC] [31mERROR[39m: [36mRequest error[39m
+FAIL ./index.test.js
+  ● Habit Service - Complete Test Suite › Health & Info Endpoints › GET /health should return healthy status
+
+    TypeError: Cannot read properties of undefined (reading 'createHabit')
+
+       9 |     fastify.post('/habits', {
+      10 |         schema: {
+    > 11 |             body: habitSchemas.createHabit
+         |                                ^
+      12 |         }
+      13 |     }, async (request, reply) => {
+      14 |         const habit = await habitService.createHabit(request.userId, request.body);
+
+      at createHabit (routes/habits.js:11:32)
+      at Plugin.Object.<anonymous>.Plugin.exec (node_modules/avvio/lib/plugin.js:125:28)
+      at Boot.Object.<anonymous>.Boot._loadPlugin (node_modules/avvio/boot.js:432:10)
+
+  ● Habit Service - Complete Test Suite › Habit CRUD › POST /habits should create daily habit
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 500
+
+      61 |             });
+      62 |
+    > 63 |             expect(response.statusCode).toBe(201);
+         |                                         ^
+      64 |             const body = JSON.parse(response.body);
+      65 |             expect(body.success).toBe(true);
+      66 |             expect(body.data.name).toBe('Morning meditation');
+
+      at Object.toBe (index.test.js:63:41)
+
+  ● Habit Service - Complete Test Suite › Habit CRUD › POST /habits should create weekly habit with days
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 500
+
+      83 |             });
+      84 |
+    > 85 |             expect(response.statusCode).toBe(201);
+         |                                         ^
+      86 |             const body = JSON.parse(response.body);
+      87 |             expect(body.data.frequency).toBe('weekly');
+      88 |             expect(body.data.weekly_days).toEqual([1, 3, 5]);
+
+      at Object.toBe (index.test.js:85:41)
+
+  ● Habit Service - Complete Test Suite › Habit CRUD › POST /habits should create custom interval habit
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 500
+
+      101 |             });
+      102 |
+    > 103 |             expect(response.statusCode).toBe(201);
+          |                                         ^
+      104 |             const body = JSON.parse(response.body);
+      105 |             expect(body.data.custom_interval_days).toBe(7);
+      106 |         });
+
+      at Object.toBe (index.test.js:103:41)
+
+  ● Habit Service - Complete Test Suite › Habit CRUD › POST /habits should reject weekly habit without days
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      117 |             });
+      118 |
+    > 119 |             expect(response.statusCode).toBe(400);
+          |                                         ^
+      120 |         });
+      121 |
+      122 |         test('GET /habits should list habits with filters', async () => {
+
+      at Object.toBe (index.test.js:119:41)
+
+  ● Habit Service - Complete Test Suite › Habit CRUD › GET /habits should list habits with filters
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      127 |             });
+      128 |
+    > 129 |             expect(response.statusCode).toBe(200);
+          |                                         ^
+      130 |             const body = JSON.parse(response.body);
+      131 |             expect(body.success).toBe(true);
+      132 |             expect(Array.isArray(body.data)).toBe(true);
+
+      at Object.toBe (index.test.js:129:41)
+
+  ● Habit Service - Complete Test Suite › Habit CRUD › DELETE /habits/:id should delete habit
+
+    TypeError: Cannot read properties of undefined (reading 'id')
+
+      173 |                 payload: { name: 'To delete' }
+      174 |             });
+    > 175 |             const habitId = JSON.parse(createResponse.body).data.id;
+          |                                                                 ^
+      176 |
+      177 |             const response = await app.inject({
+      178 |                 method: 'DELETE',
+
+      at Object.<anonymous> (index.test.js:175:65)
+
+  ● Habit Service - Complete Test Suite › Archiving › GET /habits?archived=true should show archived habits
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      207 |             });
+      208 |
+    > 209 |             expect(response.statusCode).toBe(200);
+          |                                         ^
+      210 |         });
+      211 |     });
+      212 |
+
+      at Object.toBe (index.test.js:209:41)
+
+  ● Habit Service - Complete Test Suite › Completion Logging › POST /habits/:id/complete should start streak (day 1)
+
+    TypeError: Cannot read properties of undefined (reading 'id')
+
+      277 |                 payload: { name: 'Streak test' }
+      278 |             });
+    > 279 |             const habitId = JSON.parse(createResp.body).data.id;
+          |                                                             ^
+      280 |
+      281 |             const response = await app.inject({
+      282 |                 method: 'POST',
+
+      at Object.<anonymous> (index.test.js:279:61)
+
+  ● Habit Service - Complete Test Suite › Statistics › GET /stats should return habit statistics
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      370 |             });
+      371 |
+    > 372 |             expect(response.statusCode).toBe(200);
+          |                                         ^
+      373 |             const body = JSON.parse(response.body);
+      374 |             expect(body.data).toHaveProperty('summary');
+      375 |             expect(body.data).toHaveProperty('completions');
+
+      at Object.toBe (index.test.js:372:41)
+
+  ● Habit Service - Complete Test Suite › Statistics › GET /stats?period=week should filter by period
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      383 |             });
+      384 |
+    > 385 |             expect(response.statusCode).toBe(200);
+          |                                         ^
+      386 |             const body = JSON.parse(response.body);
+      387 |             expect(body.data.period).toBe('week');
+      388 |         });
+
+      at Object.toBe (index.test.js:385:41)
+
+  ● Habit Service - Complete Test Suite › Authentication › should reject requests without token
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 500
+
+      396 |             });
+      397 |
+    > 398 |             expect(response.statusCode).toBe(401);
+          |                                         ^
+      399 |         });
+      400 |
+      401 |         test('should reject requests with invalid token', async () => {
+
+      at Object.toBe (index.test.js:398:41)
+
+  ● Habit Service - Complete Test Suite › Authentication › should reject requests with invalid token
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 500
+
+      406 |             });
+      407 |
+    > 408 |             expect(response.statusCode).toBe(401);
+          |                                         ^
+      409 |         });
+      410 |     });
+      411 |
+
+      at Object.toBe (index.test.js:408:41)
+
+  ● Habit Service - Complete Test Suite › Edge Cases › GET /habits/:id should return 404 for non-existent
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 404
+    Received: 500
+
+      418 |             });
+      419 |
+    > 420 |             expect(response.statusCode).toBe(404);
+          |                                         ^
+      421 |         });
+      422 |
+      423 |         test('POST /habits should reject negative target value', async () => {
+
+      at Object.toBe (index.test.js:420:41)
+
+  ● Habit Service - Complete Test Suite › Edge Cases › POST /habits should reject negative target value
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      432 |             });
+      433 |
+    > 434 |             expect(response.statusCode).toBe(400);
+          |                                         ^
+      435 |         });
+      436 |
+      437 |         test('GET /habits should handle empty habit list', async () => {
+
+      at Object.toBe (index.test.js:434:41)
+
+  ● Habit Service - Complete Test Suite › Edge Cases › GET /habits should handle empty habit list
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      448 |             });
+      449 |
+    > 450 |             expect(response.statusCode).toBe(200);
+          |                                         ^
+      451 |             const body = JSON.parse(response.body);
+      452 |             expect(body.data).toEqual([]);
+      453 |         });
+
+      at Object.toBe (index.test.js:450:41)
+
+
+  ● Test suite failed to run
+
+    error: relation "habit_logs" does not exist
+
+      16 |
+      17 |     afterAll(async () => {
+    > 18 |         await pool.query('DELETE FROM habit_logs WHERE user_id = $1', [testUserId]);
+         |         ^
+      19 |         await pool.query('DELETE FROM habit_streaks WHERE user_id = $1', [testUserId]);
+      20 |         await pool.query('DELETE FROM habits WHERE user_id = $1', [testUserId]);
+      21 |         await app.close();
+
+      at node_modules/pg-pool/index.js:45:11
+      at Object.<anonymous> (index.test.js:18:9)
+
+------------------------|---------|----------|---------|---------|---------------------------
+File                    | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s         
+------------------------|---------|----------|---------|---------|---------------------------
+All files               |   12.62 |     5.82 |   11.76 |   12.71 |                           
+ habit-service          |   60.86 |    42.85 |      40 |   60.86 |                           
+  index.js              |   60.86 |    42.85 |      40 |   60.86 | 42,51-55,85-93,99-103,110 
+ habit-service/routes   |   15.78 |      100 |    8.33 |   15.78 |                           
+  habits.js             |   15.78 |      100 |    8.33 |   15.78 | 14-130                    
+ habit-service/services |    1.43 |        0 |    5.88 |    1.44 |                           
+  habitService.js       |    1.43 |        0 |    5.88 |    1.44 | 13-530                    
+------------------------|---------|----------|---------|---------|---------------------------
+Test Suites: 1 failed, 1 total
+Tests:       16 failed, 11 passed, 27 total
+Snapshots:   0 total
+Time:        0.5 s, estimated 1 s
+Ran all test suites.
+Jest did not exit one second after the test run has completed.
+
+'This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.
