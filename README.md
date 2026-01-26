@@ -7,7 +7,7 @@
 **FocusHub** is a productivity app that helps you:
 - **Manage Tasks**: Create, organize, and track your work
 - **Focus Better**: Use Pomodoro-style timers to work in focused bursts
-- **Build Habits**: (Coming in Phase 4) Track and maintain daily habits
+- **Build Habits**: Track and maintain daily/weekly habits with streak tracking
 
 **Think of it as**: Todoist + Forest App + Habitica combined into one productivity system.
 
@@ -37,7 +37,7 @@ Instead of one giant application, FocusHub is split into separate "mini-services
 ┌───▼───┐ ┌─▼────┐  ┌─────▼─────┐  ┌────▼─────┐
 │ Auth  │ │ Task │  │   Focus   │  │  Habit   │
 │Service│ │Service│  │  Service  │  │ Service  │
-│       │ │       │  │           │  │ (Future) │
+│       │ │       │  │           │  │          │
 └───┬───┘ └──┬───┘  └─────┬─────┘  └────┬─────┘
     │        │            │              │
 ┌───▼────────▼────────────▼──────────────▼─────┐
@@ -54,7 +54,7 @@ Instead of one giant application, FocusHub is split into separate "mini-services
 
 ---
 
-## 📦 Current Status - Phase 3 Complete
+## 📦 Current Status - All 4 Phases Complete! 🎉
 
 ### ✅ Phase 1: Authentication Service (Complete)
 **What it does**: Manages user accounts and login
@@ -174,7 +174,7 @@ This Week:
 - **Archiving**: Hide habits without losing history
 
 **API Endpoints**: 11  
-**Tests**: 31/31 target ✅
+**Tests**: 27/27 passing ✅
 
 **Example Workflow**:
 ```
@@ -305,6 +305,7 @@ cd focushub
 cd auth-service && npm install
 cd ../task-service && npm install
 cd ../focus-service && npm install
+cd ../habit-service && npm install
 
 # 3. Set up environment variables
 cp .env.example .env
@@ -314,16 +315,19 @@ cp .env.example .env
 createdb focushub_auth
 createdb focushub_tasks
 createdb focushub_focus
+createdb focushub_habits
 
 # 5. Run migrations
 cd auth-service && npx db-migrate up
 cd ../task-service && npx db-migrate up
 cd ../focus-service && npx db-migrate up
+cd ../habit-service && npx db-migrate up
 
 # 6. Start services
 cd auth-service && npm run dev     # Port 3001
 cd task-service && npm run dev     # Port 3002
 cd focus-service && npm run dev    # Port 3003
+cd habit-service && npm run dev    # Port 3004
 ```
 
 ### Testing
@@ -333,11 +337,14 @@ cd focus-service && npm run dev    # Port 3003
 cd auth-service && NODE_ENV=test npm test
 cd task-service && NODE_ENV=test npm test
 cd focus-service && NODE_ENV=test npm test
+cd habit-service && NODE_ENV=test npm test
 
 # Should see:
 # Auth: 17/17 passing ✅
 # Tasks: 23/23 passing ✅
 # Focus: 22/22 passing ✅
+# Habits: 27/27 passing ✅
+# TOTAL: 89/89 tests (100%)!
 ```
 
 ---
